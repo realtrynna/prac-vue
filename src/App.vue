@@ -1,73 +1,39 @@
 <template>
     <div>
-        <span>{{ reactiveMessage }}</span>
-        <button v-on:click="addReactiveMessage">Click</button>
-        <br />
+        <input type="checkbox" v-model="values" />
 
-        <span>{{ normalMessage }}</span>
-        <button v-on:click="addNormalMessage">Click</button>
+        {{ values }}
 
-        <span v-once>{{ value }}</span>
-
-        <button v-on:click="changeValue">테스트!!</button>
-
-        <br />
-
-        <input type="text" v-bind:value="title" />
-        <input v-bind="config" />
+        <button @click="check">Check!!</button>
     </div>
 </template>
 
 <script lang="ts">
-import { ref, isRef, onUpdated, toRefs, toRef } from "vue";
+import {
+    ref,
+    isRef,
+    onUpdated,
+    toRefs,
+    toRef,
+    onMounted,
+    reactive,
+    computed,
+} from "vue";
 
 export default {
-    props: {
-        age: Number,
-    },
-    setup(props, { attrs, slots, emit, expose }) {
-        // const { age } = toRefs(props);
-        const age = toRef(props, "age");
+    setup() {
+        const values = reactive([]);
 
-        const config = ref({
-            type: "password",
-        });
-
-        const value = ref("currentValue");
-        const title = ref("title");
-
-        const reactiveMessage = ref("Reactive Message");
-        let normalMessage = "Normal Message";
-
-        const addReactiveMessage = () => {
-            console.log("실행");
-            reactiveMessage.value = "반응형 메세지입니다.";
+        const check = () => {
+            console.log(values);
         };
-
-        const addNormalMessage = () => {
-            normalMessage = "일반 메세지입니다.";
-        };
-
-        const changeValue = () => {
-            value.value = "change Value!!!!!!!";
-        };
-
-        onUpdated(() => {
-            console.log("Updated Execute");
-        });
-
-        return {
-            reactiveMessage,
-            normalMessage,
-            value,
-            title,
-            config,
-            addReactiveMessage,
-            addNormalMessage,
-            changeValue,
-        };
+        return { values, check };
     },
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style scoped>
+.active {
+    background-color: red;
+}
+</style>
