@@ -1,73 +1,70 @@
 <template>
     <div>
-        <span>{{ reactiveMessage }}</span>
-        <button v-on:click="addReactiveMessage">Click</button>
-        <br />
+<<<<<<< HEAD
+        <button @click="change">Change!</button>
+=======
+        <input type="checkbox" v-model="values" />
 
-        <span>{{ normalMessage }}</span>
-        <button v-on:click="addNormalMessage">Click</button>
+        {{ values }}
 
-        <span v-once>{{ value }}</span>
-
-        <button v-on:click="changeValue">테스트!!</button>
-
-        <br />
-
-        <input type="text" v-bind:value="title" />
-        <input v-bind="config" />
+        <button @click="check">Check!!</button>
+>>>>>>> d0ccdaaba0e300bd759036f556aef5b9c79b1b85
     </div>
 </template>
 
 <script lang="ts">
-import { ref, isRef, onUpdated, toRefs, toRef } from "vue";
+<<<<<<< HEAD
+import { objectToString } from "@vue/shared";
+=======
+>>>>>>> d0ccdaaba0e300bd759036f556aef5b9c79b1b85
+import {
+    ref,
+    isRef,
+    onUpdated,
+    toRefs,
+    toRef,
+    onMounted,
+    reactive,
+    computed,
+<<<<<<< HEAD
+    watch,
+=======
+>>>>>>> d0ccdaaba0e300bd759036f556aef5b9c79b1b85
+} from "vue";
 
 export default {
-    props: {
-        age: Number,
-    },
-    setup(props, { attrs, slots, emit, expose }) {
-        // const { age } = toRefs(props);
-        const age = toRef(props, "age");
-
-        const config = ref({
-            type: "password",
+    setup() {
+<<<<<<< HEAD
+        const user = reactive({
+            name: "윤승근",
+            age: 30,
+            married: true,
         });
 
-        const value = ref("currentValue");
-        const title = ref("title");
+        const change = () => (user.married = false);
 
-        const reactiveMessage = ref("Reactive Message");
-        let normalMessage = "Normal Message";
+        watch(
+            () => user,
+            (newValue, oldValue) => {
+                console.log(newValue);
+            },
+            { deep: true }
+        );
+        return { user, change };
+=======
+        const values = reactive([]);
 
-        const addReactiveMessage = () => {
-            console.log("실행");
-            reactiveMessage.value = "반응형 메세지입니다.";
+        const check = () => {
+            console.log(values);
         };
-
-        const addNormalMessage = () => {
-            normalMessage = "일반 메세지입니다.";
-        };
-
-        const changeValue = () => {
-            value.value = "change Value!!!!!!!";
-        };
-
-        onUpdated(() => {
-            console.log("Updated Execute");
-        });
-
-        return {
-            reactiveMessage,
-            normalMessage,
-            value,
-            title,
-            config,
-            addReactiveMessage,
-            addNormalMessage,
-            changeValue,
-        };
+        return { values, check };
+>>>>>>> d0ccdaaba0e300bd759036f556aef5b9c79b1b85
     },
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style scoped>
+.active {
+    background-color: red;
+}
+</style>

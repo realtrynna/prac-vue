@@ -2,7 +2,22 @@
 
 자바스크립트 Framework이다. 바닐라 자바스크립트를 기반으로 효율적인 UI 개발이 가능하다.
 
+[https://www.inflearn.com/course/vue-%EC%99%84%EB%B2%BD-%EA%B8%B0%EB%B3%B8/dashboard]
+
+| Date     | Content                                                                                      | Description                                                |
+| -------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| 23.01.18 | [Section1](#vue), [Section2](#options-api-vvs-composition-api), [Section3](#template-syntax) | Syntax, Directive, Component, Composition API              |
+| 23.01.19 | [Section3](#반응형)                                                                          | Reactivity, Computed, Binding, Rendering, Directive, Event |
+<<<<<<< HEAD
+| 23.01.20 | [Section3](#watch)                                                                           | Watch                                                      |
+=======
+>>>>>>> d0ccdaaba0e300bd759036f556aef5b9c79b1b85
+
 <br>
+
+<details>
+<summary><strong>설치</strong></summary>
+<div markdown="1">
 
 ## 프로젝트 세팅
 
@@ -28,6 +43,9 @@ Vue를 설치하는 방법은 다음과 같다. <br>
 
     npm i
     ```
+
+</div> 
+</details>
 
 <br>
 
@@ -191,7 +209,7 @@ export default {
 
 <br>
 
-SFC는 template, script, style 크게 3개의 Tag로 구성되어 있다.
+**_SFC_** 는 template, script, style 크게 3개의 Tag로 구성되어 있다.
 
 ```javascript
 <template>
@@ -664,8 +682,791 @@ Vue는 Template Syntax를 사용해 Rendering 된 Component Instance Data에 **_
 
 ### **반응형**
 
-자바스크립트 객체에서 반응형 상태를 생성하기 위해서 reactive() 함수를 사용한다.
+자바스크립트 객체에서 반응형 상태를 생성하기 위해서 **_reactive()_** 함수를 사용한다.
 
 ```javascript
+import { reactive } from "vue";
+
+// 반응형 상태
 const state = reactive({ count: 0 });
 ```
+
+<br>
+
+Component template에서 사용하려면 **_setup()_** 함수에서 **_Return_** 해야 한다. <br>
+_ 반환된 상태는 반응형 객체다. <br>
+_ Component의 data()에서 객체를 반환할 경우 내부적으로 reactive()에 의해 반응형으로 만들어진다. <br>
+
+```javascript
+import { reactive } from "vue";
+
+export default {
+    setup() {
+        const state = reactive({ count: 0 });
+
+        return {
+            state,
+        };
+    },
+};
+```
+
+```html
+<div>{{ stats.count }}</div>
+```
+
+<br>
+
+**ref로 원시값 반응형 데이터 생성** <br>
+reactive() 함수는 **_객체 타입_** 에만 동작하며 **_기본 타입_**(String, Number, boolean)을 반응형으로 만들 경우 **_ref_** 를 사용한다. <br>
+
+```javascript
+import { ref } from "vue";
+
+const str = ref("String");
+const num = ref("Number");
+```
+
+<br>
+
+ref는 변이(**_mutable_**) 가능한 객체를 반환한다. 이 객체 안에는 value라는 속성을 포함하며 value 값은 ref() **_Method_** 에서 매개변수로 받은 값을 가지고 있다. <br>
+이 객체는 내부의 value 값에 대한 반응형 **_참조_**(reference) 역할을 한다. <br>
+
+```javascript
+import { ref } from "vue";
+
+const count = ref(0);
+
+count.value++; // count 1
+```
+
+<br>
+
+**template에서 사용**
+template에서 사용할 경우 자동으로 내부 값(value)를 풀어내므로 .value로 접근하지 않고 사용 가능하다. <br>
+
+```html
+<template>
+    <div>{{ count }}</div>
+    <button @click="count++"></button>
+</template>
+```
+
+<br>
+
+**반응형 객체의 ref UnWarping** <br>
+ref의 반응형 객체 속성으로 접근 시 자동적으로 내부 값으로 해제하여 일반적인 속성과 마찬가지로 동작하며 반응형은 **_연결_** 되어 있다. <br>
+
+```javascript
+import { ref, reactive } from "vue";
+
+const count = ref(0);
+const state = reactive({
+    count,
+});
+
+count.value++;
+count.value; // 1
+state.count; // 1
+```
+
+<br>
+
+**반응형 상태 구조 분해** <br>
+반응형 객체를 구조 분해 시 반응형을 **_상실_** 한다. <br>
+
+```javascript
+import { reactive } from "vue";
+
+const user = reactive({
+    name: "윤승근",
+    age: 30,
+});
+
+const { name, age } = user;
+```
+
+<br>
+
+반응형 객체를 일련의 ref들도 변환하며 ref들은 소스 객체에 대한 반응형 **_연결을 유지_** 한다. <br>
+
+```javascript
+import { reactive, toRefs } from "vue";
+
+const user = reactive({
+    name: "윤승근",
+    age: 30,
+    gender: true,
+});
+
+const { gender } = toRefs(user);
+
+gender.value; // true
+```
+
+<br>
+
+### **Computed**
+
+template 문법({{}})은 매우 편리하지만 코드가 길어질 경우 **_가독성_** 확보가 어려워 **_유지 보수_** 가 힘들다. <br>
+
+```javascript
+const user = reactive({
+    name: "윤승근",
+    age: 30,
+    useLanguage: {
+        java: "하",
+        javascript: "상",
+        typescript: "상",
+        vue: "하",
+    },
+});
+
+return {
+    user,
+};
+```
+
+```html
+<p>{{ user.useLanguage.vue }}</p>
+```
+
+<br>
+
+**computed를 통해 다음과 같이 작성할 수 있다.** <br>
+computed는 **_Cache_** 된다. <br>
+Method는 **_Parameter_** 가 올 수 있다. <br>
+Component Rendering 시 computed의 비용이 더 **_적다._** <br>
+
+```javascript
+const user = reactive({
+    name: "윤승근",
+    age: 30,
+    useLanguage: {
+        java: "하",
+        javascript: "상",
+        typescript: "상",
+        vue: "하",
+    },
+});
+
+const languageResult = computed(() => {
+    return user.useLanguage.vue === "상" || user.useLanguage.vue === "중"
+        ? "잘하시네요."
+        : "하수시네요.";
+});
+
+return {
+    user,
+    languageResult,
+};
+```
+
+```html
+<div>{{ languageResult }}</div>
+```
+
+<br>
+
+#### Writable Computed
+
+computed는 기본적으로 getter(**_ReadOnly_**)다. 계산된 속성에 새 값을 할당 할 수 없다. <br>
+계산된 속성이 필요한 경우 **_getter와 setter를_** 모두 제공하여 속성을 만들 수 있다. <br>
+
+```javascript
+const framework = "Express";
+
+const result = computed({
+    get() {
+        return framework.value;
+    },
+    set(value) {
+        result.value = value;
+    },
+});
+
+framework.value = "NestJS";
+```
+
+<br>
+
+### Class와 Style Binding
+
+1.  클래스 Binding <br>
+
+    -   **객체 바인딩** <br>
+        Class를 동적으로 Binding 하기 위해 **_:class="v-bind"_** 사용
+
+        ```html
+        <div class="text" :class="{ active: isActive }"></div>
+        ```
+
+    -   객체를 반환하는 **_computed Binding_**
+
+        ```html
+        <div class="text" :class="classObject"></div>
+        ```
+
+        ```javascript
+        const classObject = computed(() => {
+            return {
+                active: isActive.value && !hasError.value,
+                "text-danger": !isActive.value && hasError.value,
+            };
+        });
+        ```
+
+            ````
+
+    -   **배열 바인딩** <br>
+        배열에 :class를 Binding 하여 **_Class 목록_** 을 적용할 수 있다.
+
+        ```javascript
+        const activeClass = ref("active");
+        const errorClass = ref("text-danger");
+        ```
+
+        ```html
+        <div :class="[activeClass, errorClass]"></div>
+        ```
+
+<br>
+
+2.  스타일 Binding <br>
+    HTML style 속성에 **_객체_** 를 Binding할 수 있다. <br>
+
+    ```javascript
+    const styleObject = reactive({
+        color: "red",
+        fontSize: "13px";
+    })
+    ```
+
+    ```html
+    <div :style="styleObject"></div>
+    ```
+
+<br>
+
+### 조건부 렌더링
+
+-   **v-if**
+
+```html
+<h2 v-if="condition">Invisible</h2>
+<h2 v-else>Not Invisible</h2>
+<button @click="showing"></button>
+```
+
+```javascript
+const condition = ref(false);
+
+const showing = () => (condition.value = true);
+
+return {
+    condition,
+    showing,
+};
+```
+
+<br>
+
+-   **v-else-if**
+
+```html
+<div v-if="showing === `갤럭시`">갤럭시</div>
+<div v-else-if="showing === `아이폰`">아이폰</div>
+<div v-else-if="showing === `샤오미`">샤오미</div>
+<div v-else>etc</div>
+<button @click="submit">Change!</button>
+```
+
+```javascript
+const showing = ref("나머지");
+
+const submit = () => (showing.value = "아이폰");
+return {
+    showing,
+    submit,
+};
+```
+
+<br>
+
+-   **template v-if**
+
+```html
+<template v-if="condition">
+    <h1>Title</h1>
+</template>
+```
+
+<br>
+
+-   **v-show**
+
+```html
+<h2 v-show="condition">Title</h2>
+<button @click="condition = true">Change!!</button>
+```
+
+<br>
+
+-   **v-if와 v-show** <br>
+    v-if는 **_실제_**(Real)로 Rendering 된다. 전환 시 Block 내부의 Component들이 **_제거되고 새로 생성_** 된다. <br>
+    v-if는 **_게으르다_**. (Lazy) 초기 Rendering 시 조건이 False일 경우 아무 동작도 하지 않는다. <br>
+    조건부 Block은 조건이 처음으로 True가 될 시점까지 Rendering 되지 않는다. <br>
+
+    <br>
+
+    이에 비해 v-show는 간단하다. Element **_CSS 기반 전환_** 으로 초기 조건과 관계없이 항상 Rendering 된다. <br>
+    일반적으로 **_v-if_** 는 **_전환 비용_** 이 높고 **_v-show_** 는 **_초기 Rendering_** 비용이 높다. <br>
+    그러므로 전환이 자주 일어난다면 v-show를 사용하고 Runtime 시 조건이 변경되지 않는다면 v-if를 사용해야 한다. <br>
+
+<br>
+
+-   **v-if와 v-for**
+    v-if와 v-for를 같이 사용하는 건 권장되지 않는다. <br>
+    동일한 Element에 v-if와 v-for를 같이 사용한다면 v-if가 더 높은 우선순위를 갖는다. <br>
+
+<br>
+
+### **목록 렌더링**
+
+-   v-for
+    v-for 디렉티브를 사용해 배열의 목록을 렌더링 할 수 있다. <br>
+    **_v-for="item in items"_** 로 배열의 순회한다. <br>
+    **_v-for="(item, index) in items"_** 로 배열의 인덱스를 가져올 수 있다. <br>
+    항목 나열 시 :key 속성에는 고유한 값을 지정해야 한다. <br>
+
+    ```html
+    <li v-for="(user, index) in result" :key="user.id">{{ user.age }}</li>
+    <li v-for="(value, key, index) in obj" :key="key">{{ value }}</li>
+    ```
+
+    ```javascript
+    const users = [
+        { id: 1, name: "사용자 1", age: 30 },
+        { id: 2, name: "사용자 2", age: 29 },
+        { id: 3, name: "사용자 3", age: 28 },
+        { id: 4, name: "사용자 4", age: 27 },
+        { id: 5, name: "사용자 5", age: 26 },
+    ];
+
+    const result = reactive(users);
+
+    const obj = reactive({
+        title: "Title",
+        content: "Content",
+        author: "Writer",
+    });
+
+    return {
+        result,
+        obj,
+    };
+    ```
+
+<br>
+
+### **_디렉티브_** (Directive)
+
+직역하면 지시라는 의미로 v- 접두사가 붙은 특수 속성을 의미한다. <br>
+기능 상 중요한 역할인 Component(또는 DOM)에게 "**_~하게 작동하라_**"라고 지시를 해주는 지시문의 역할을 수행한다. <br>
+
+-   디렉티브 구성 <br>
+    전달 인자(**_Argument_**)와 수식어(**_Modifiers_**)로 구성되어 있다. <br>
+
+    1. **전달 인자** <br>
+       일부 디렉티브는 디렉티브명 뒤 **_콜론_**(:)으로 표기되는 전달 인자를 가질 수 있다.
+       v-bind 디렉티브는 반응적으로 **_HTML 속성을 갱신_** 하는데 사용한다. <br>
+
+        > 대괄호를 사용하여 전달 인자를 **_동적_** 으로 삽입할 수 있다. <br>
+        > <a v-bind:[attributeName]="url">...</a>
+
+    2. **수식어** <br>
+       수식어는 **_점_**(.)으로 표시되는 특수 접미사로 디렉티브가 특별한 방식으로 **_Binding_** 되어야 함을 나타낸다. <br>
+
+<br>
+
+### **Event**
+
+이벤트 처리는 **_v-on_** 디렉티브로 사용 가능하다. v-on 이벤트는 자주 사용하므로 **_@_** 단축 표현 키워드로 사용된다. <br>
+
+```html
+<div>
+    <button @click="counter += 1">{{ counter }}</button>
+</div>
+```
+
+```javascript
+const counter = ref(0);
+```
+
+-   **Method Event** Handler <br>
+    v-on 디렉티브에서 Method를 호출할 수 있으며 매개변수로 **_event 객체_** 를 받는다.
+
+```javascript
+const submit = (event) => {
+    console.log(event);
+};
+```
+
+```html
+<button @click="submit">Submit!</button>
+```
+
+<br>
+
+-   **event** 객체 접근
+
+```html
+<button @click="submit("message", $event)>submit!</button>
+```
+
+```javascript
+const submit = (message, event) => {
+    console.log(message, event);
+};
+```
+
+<br>
+
+-   **event** 수식어 (Modifiers)
+    이벤트 조작 시 event.preventDefault() 또는 event.stopPropagation()을 호출할 수 있다.
+
+    -   .stop = e.stopPropagation()
+    -   .prevent = e.preventDefault()
+    -   .capture = 캡쳐 모드 사용 시 Event Listener 사용 가능
+    -   .self = 오로지 자기 자신만 호출할 수 있다. (Target이 self)
+    -   .once = 해당 이벤트는 한 번만 실행된다.
+    -   .passive = 일반적으로 모바일 장치의 성능을 개선하기 위해 사용하며 Touch Event Listener와 같이 사용된다.
+
+<br>
+
+-   **Key** 수식어
+    키보드 이벤트 수신 시 사용한다. v-on 또는 @ 디렉티브에 Key 수식어가 제공된다.
+
+<br>
+
+-   **System Key** 수식어
+    다음 수식어를 사용해 해당 수식어 키가 눌러진 경우에만 Mouse 또는 Keyboard Event Listener를 Trigger 한다. <br>
+
+    -   .ctrl
+    -   .atl
+    -   .shift
+    -   .meta(Mac에서 meta는 command key, Window에서 meta는 window key)
+
+    ```javascript
+    // Alt + Enter
+    <input @keyup.alt.enter="clear" />
+    // Control + Enter
+    <input @keyup.ctrl.enter="send" />
+    // Control + Click
+    <input @keyup.ctrl.click="submit" />
+    ```
+
+<br>
+
+-   .**exact** 수식어
+    .exact 수식어는 조합이 정확해야 할 경우 사용한다. <br>
+    ```javascript
+    // Alt 또는 Shift 와 같이 눌렀을 경우 실행
+    <button @click.ctrl="submit">submit</button>
+    // Ctrl 키 눌렀을 경우 실행
+    <button @click.ctrl.exact="submit">submit</button>
+    // System Key가 눌리지 않은 상태에서 실행
+    <button @click.exact="submit">submit</button>
+    ```
+
+<br>
+
+-   **Mouse Button** 수식어
+    -   .left
+    -   .right
+    -   .middle
+
+<br>
+
+<<<<<<< HEAD
+### **양방향 바인딩**
+=======
+### 양방향 바인딩
+>>>>>>> d0ccdaaba0e300bd759036f556aef5b9c79b1b85
+
+입력 양식 처리 시 **_입력 요소_**(Input)의 상태와 **_자바스크립트 상태_**(State)를 동기화해야 할 경우가 많다. <br>
+value를 Binding 하고 @input 이벤트로 text를 변경하는 건 매우 번거롭다. <br>
+
+<br>
+
+-   기존
+
+```html
+<input :value="text" @input="event => text = event.target.value" />
+```
+
+<br>
+
+-   v-model
+
+```html
+<input v-model="text" @input="change" />
+
+<span>{{ text }}</span>
+```
+
+```javascript
+const text = ref("");
+
+const change = (event) => {
+    text.value = event.target.value;
+};
+
+return {
+    text,
+    change,
+};
+```
+
+<br>
+
+-   checkbox, radio, select <br>
+    v-model은 내부적으로 HTML Element가 어떤 요소냐에 따라 서로 다른 속성(**_:value_**)과 이벤트(**_@input_**)를 사용한다. <br>
+    input type="text"와 textarea는 value 속성과 input 이벤트를 사용한다. <br>
+    select Tag는 value 속성과 change 이벤트를 사용한다. <br>
+
+<br>
+
+-   checkbox <br>
+    :checked, @change
+
+    ```html
+    <input
+        type="checkbox"
+        :checked="checkboxValue"
+        @change="event => checkboxValue = event.target.checked"
+    />
+    ```
+
+    <br>
+
+    하나의 checkbox는 단일 **_Boolean_** 값을 가진다.
+
+    ```html
+    <input type="Checkbox" v-model="checkboxValue" />
+    ```
+
+    <br>
+
+    여러 개의 checkbox는 **_배열_** 을 Binding한다.
+
+    ```html
+    <input type="Checkbox" v-model="checkboxValues" />HTML
+    <input type="Checkbox" v-model="checkboxValues" />CSS
+    <input type="Checkbox" v-model="checkboxValues" />JAVASCRIPT
+
+    <span>checkboxValues</span>
+    ```
+
+<br>
+
+-   radio <br>
+    v-model
+    ```html
+    <label>
+        <input type="radio" name="type" value="O" v-model="radioValue" />
+        O형
+    </label>
+    <label>
+        <input type="radio" name="type" value="A" v-model="radioValue" />
+        A형
+    </label>
+    ```
+
+<br>
+
+-   select <br>
+    v-model
+    ```html
+    <select v-model="selectValue">
+        <option value="html">HTML</option>
+        <option value="css">CSS</option>
+    </select>
+    ```
+
+<br>
+<<<<<<< HEAD
+
+-   v-model 수식어
+    .lazy <br>
+    기본적으로 v-model은 각 input 이벤트 후 입력과 데이터를 **_동기화_** 한다. <br>
+    **_lazy_** 수식어를 추가하여 change 이벤트 이후에 동기화할 수 있다.
+
+    ```javascript
+    <input v-model.lazy="text"/>
+    ```
+
+    <br>
+
+    .number <br>
+    사용자 입력 데이터를 number 타입으로 변환한다.
+
+    ```javascript
+    <input v-model.number"text" />
+    ```
+
+    <br>
+
+    .trim <br>
+    사용자가 입력한 내용에서 자동으로 앞뒤 공백을 제거한다.
+
+    ```javascript
+    <input v-model.trim="text"
+    ```
+
+<br>
+
+### **Watch**
+
+반응형 상태가 변경 되었을 경우 감지하여 다른 작업(API Request)을 수행해야 할 경우가 있다. <br>
+
+어떠한 상태가 변경되었을 경우 DOM을 변경하거나 비동기 작업을 수행해 다른 상태를 변경해야할 경우 사용한다. <br>
+
+Composition API watch 함수를 사용해 반응형 상태가 변경되었을 경우 특정 작업을 수행할 수 있다. <br>
+
+```html
+<span>{{ condition }}</span> <button @click="changeCondition">변경!!</button>
+```
+
+```typescript
+const condition = ref("Value");
+
+const changeCondition = () => {
+    condition.value = condition.value.split("").reverse().join("");
+};
+
+watch(condition, (newValue, oldValue) => {
+    console.log("NewValue", newValue);
+    console.log("OldValue", oldValue);
+});
+```
+
+<br>
+
+#### **Watch Source Type**
+
+처음 Parameter로 다양한 Type이 될 수 있다. (ref, reactive, computed, getter, array)
+
+```javascript
+watch(/* Source Type */, (newValue, oldValue) => {
+
+})
+```
+
+```javascript
+const a = ref(0);
+const b = ref(0);
+
+// single ref
+watch(x, (newX) => {
+    newX
+});
+
+// getter
+watch(
+    () => a.value + b.value,
+    (sum) => sum;
+)
+
+// array of multiple sources
+watch([a, () => b.value], ([newA, newB]) => {
+    newA;
+    newB;
+})
+```
+
+<br>
+
+-   반응형 객체의 속성은 볼 수 없다.
+
+```javascript
+const obj = reactive({ count: 0 });
+
+watch(obj.count, (newValue) => {
+    newValue;
+});
+```
+
+-   getter 사용
+
+```javascript
+const obj = reactive({ count: 0 });
+watch(
+    () => obj.count,
+    (newValue, oldValue) => {
+        newValue;
+    }
+);
+```
+
+<br>
+
+### **Deep Option**
+
+반응형 객체를 직접 watch 시 암시적으로 깊은 감시자가 생성되며 속성 뿐아니라 모든 중첩된 속성에도 Trigger된다. <br>
+
+```javascript
+const user = reactive({
+    name: "윤승근",
+    age: 30,
+    gender: true,
+});
+
+watch(user, (newValue, oldValue) => {});
+```
+
+<br>
+
+getter function으로 객체를 넘길 경우 객체의 값이 변경될 경우에만 Trigger된다. 중첩된 속성은 Trigger되지 않는다. <br>
+
+```javascript
+const user = {
+    name: "윤승근",
+    age: 30,
+    married: true,
+};
+
+const changeAge = () => (user.age = 300);
+
+watch(
+    () => user.age,
+    (newValue) => newValue
+);
+```
+
+<br>
+
+deep 옵션을 사용해 깊은 감시자로 강제할 수 있다. <br>
+큰 데이터 구조에서 deep 사용 시 비용이 많이 들어가므로 필요한 경우에만 사용해야 한다. <br>
+
+```javascript
+watch(
+    () => user.age,
+    (newValue) => {
+        newValue;
+    },
+    { deep: true }
+);
+```
+
+<br>
+
+#### immediate
+
+즉시 실행 <br>
+
+```javascript
+
+```
+=======
+>>>>>>> d0ccdaaba0e300bd759036f556aef5b9c79b1b85
