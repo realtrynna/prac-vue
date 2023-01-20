@@ -8,7 +8,10 @@
 | -------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
 | 23.01.18 | [Section1](#vue), [Section2](#options-api-vvs-composition-api), [Section3](#template-syntax) | Syntax, Directive, Component, Composition API              |
 | 23.01.19 | [Section3](#반응형)                                                                          | Reactivity, Computed, Binding, Rendering, Directive, Event |
+<<<<<<< HEAD
 | 23.01.20 | [Section3](#watch)                                                                           | Watch                                                      |
+=======
+>>>>>>> d0ccdaaba0e300bd759036f556aef5b9c79b1b85
 
 <br>
 
@@ -1185,7 +1188,11 @@ const submit = (message, event) => {
 
 <br>
 
+<<<<<<< HEAD
 ### **양방향 바인딩**
+=======
+### 양방향 바인딩
+>>>>>>> d0ccdaaba0e300bd759036f556aef5b9c79b1b85
 
 입력 양식 처리 시 **_입력 요소_**(Input)의 상태와 **_자바스크립트 상태_**(State)를 동기화해야 할 경우가 많다. <br>
 value를 Binding 하고 @input 이벤트로 text를 변경하는 건 매우 번거롭다. <br>
@@ -1288,6 +1295,7 @@ return {
     ```
 
 <br>
+<<<<<<< HEAD
 
 -   v-model 수식어
     .lazy <br>
@@ -1460,3 +1468,5 @@ watch(
 ```javascript
 
 ```
+=======
+>>>>>>> d0ccdaaba0e300bd759036f556aef5b9c79b1b85
