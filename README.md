@@ -8,10 +8,8 @@
 | -------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
 | 23.01.18 | [Section1](#vue), [Section2](#options-api-vvs-composition-api), [Section3](#template-syntax) | Syntax, Directive, Component, Composition API              |
 | 23.01.19 | [Section3](#반응형)                                                                          | Reactivity, Computed, Binding, Rendering, Directive, Event |
-<<<<<<< HEAD
 | 23.01.20 | [Section3](#watch)                                                                           | Watch                                                      |
-=======
->>>>>>> d0ccdaaba0e300bd759036f556aef5b9c79b1b85
+| 23.01.25 | [Section5](#언어-블록)                                                                       | Watch, watchEffect, Props                                  |
 
 <br>
 
@@ -245,7 +243,20 @@ Component를 어디에서 사용하냐에 따라 2가지 등록 방법이 있다
 <br>
 
 -   **전역 등록** (Global Registration) <br>
-    **_app.component_** 를 이용해 Component를 등록하면 Component는 Application 전역에 등록이 되어 모든 Component Instance의 Template 내부에서 접근이 가능하다.
+    **_app.component_** 를 이용해 Component를 등록하면 Component는 Application 전역에 등록이 되어 모든 Component Instance의 Template 내부에서 접근이 가능하다. <br>
+
+    -   main.ts
+
+    ```javascript
+    import App from "./App.vue";
+    import { createApp } from "vue";
+    import Card from "./components/Card.vue";
+
+    const app = createApp(App);
+
+    app.component("Card", Card);
+    app.mount("#app");
+    ```
 
     <br>
 
@@ -1188,11 +1199,7 @@ const submit = (message, event) => {
 
 <br>
 
-<<<<<<< HEAD
 ### **양방향 바인딩**
-=======
-### 양방향 바인딩
->>>>>>> d0ccdaaba0e300bd759036f556aef5b9c79b1b85
 
 입력 양식 처리 시 **_입력 요소_**(Input)의 상태와 **_자바스크립트 상태_**(State)를 동기화해야 할 경우가 많다. <br>
 value를 Binding 하고 @input 이벤트로 text를 변경하는 건 매우 번거롭다. <br>
@@ -1295,7 +1302,6 @@ return {
     ```
 
 <br>
-<<<<<<< HEAD
 
 -   v-model 수식어
     .lazy <br>
@@ -1328,9 +1334,9 @@ return {
 
 ### **Watch**
 
-반응형 상태가 변경 되었을 경우 감지하여 다른 작업(API Request)을 수행해야 할 경우가 있다. <br>
+반응형 상태가 변경되었을 경우 감지하여 다른 작업(API Request)을 수행해야 할 경우가 있다. <br>
 
-어떠한 상태가 변경되었을 경우 DOM을 변경하거나 비동기 작업을 수행해 다른 상태를 변경해야할 경우 사용한다. <br>
+어떠한 상태가 변경되었을 경우 DOM을 변경하거나 비동기 작업을 수행해 다른 상태를 변경해야 할 경우 사용한다. <br>
 
 Composition API watch 함수를 사용해 반응형 상태가 변경되었을 경우 특정 작업을 수행할 수 있다. <br>
 
@@ -1413,7 +1419,7 @@ watch(
 
 ### **Deep Option**
 
-반응형 객체를 직접 watch 시 암시적으로 깊은 감시자가 생성되며 속성 뿐아니라 모든 중첩된 속성에도 Trigger된다. <br>
+반응형 객체를 직접 watch 시 암시적으로 **_깊은 감시자_** 가 생성되며 속성뿐 아니라 모든 중첩된 속성에도 Trigger 된다. <br>
 
 ```javascript
 const user = reactive({
@@ -1427,7 +1433,7 @@ watch(user, (newValue, oldValue) => {});
 
 <br>
 
-getter function으로 객체를 넘길 경우 객체의 값이 변경될 경우에만 Trigger된다. 중첩된 속성은 Trigger되지 않는다. <br>
+**_getter function_** 으로 객체를 넘길 경우 객체의 값이 변경될 경우에만 Trigger된다. 중첩된 속성은 Trigger되지 않는다. <br>
 
 ```javascript
 const user = {
@@ -1446,7 +1452,9 @@ watch(
 
 <br>
 
-deep 옵션을 사용해 깊은 감시자로 강제할 수 있다. <br>
+#### **deep**
+
+deep Method를 사용해 깊은 감시자로 강제할 수 있다. <br>
 큰 데이터 구조에서 deep 사용 시 비용이 많이 들어가므로 필요한 경우에만 사용해야 한다. <br>
 
 ```javascript
@@ -1461,12 +1469,283 @@ watch(
 
 <br>
 
-#### immediate
+#### **immediate**
 
-즉시 실행 <br>
+**_immediate_** Method를 사용해 최초에 즉시 실행할 수 있다. <br>
 
 ```javascript
+const message = ref("message");
+const reverseMessage = ref("");
 
+watch(
+    message,
+    (newValue) => {
+        reverseMessage.value = newValue.split("").reverse().join("");
+    },
+    {
+        immediate: true,
+    }
+);
 ```
-=======
->>>>>>> d0ccdaaba0e300bd759036f556aef5b9c79b1b85
+
+<br>
+
+-   함수를 외부에 선언해 즉시 실행 (**_watchEffect_** 로 간소화 가능)
+
+```javascript
+const message = ref("message");
+const reverseMessage = ref("");
+
+const reverse = () => {
+    reverseMessage.value = message.split("").reverse().join("");
+};
+
+watch(message, reverse);
+
+reverse();
+```
+
+<br>
+
+#### **computed와 watch**
+
+둘 다 동일한 역할을 한다.
+
+1. computed <br>
+   Vue Instance State(**_ref_**, **_reactive_**)의 종속 관계를 자동으로 세팅하고자 할 경우 **_computed_** 사용 <br>
+   위 reverseMessage는 message의 값에 따라 결정되는 종속 관계에 있다. <br>
+   종속 관계 코드가 복잡해지면 **_watch_** 로 구현할 경우 더 복잡해지거나 중복 계산 또는 에러 발생 확률이 올라간다.
+
+<br>
+
+2. watch <br>
+   Vue Instance State(ref, reactive)의 **_변겅 시점_** 에 특정 액션(**_API Call_**, **_Route Push_**)을 취하고자 할 경우 사용한다. <br>
+   대게의 경우 computed로 구현 가능하다면 watch가 아니라 **_computed_** 를 사용하는 게 옳다.
+
+<br>
+
+#### **watchEffect**
+
+watch와 watchEffect 둘 다 관련 작업(API Call, Route Push)을 **_반응적_** 으로 수행할 수 있으며 가장 큰 차이점은 반응형 데이터를 **_추적_** 하는 방식이다. <br>
+
+-   **_watch_** <br>
+    명시적으로 **_관찰된 Data_** 만 추적한다. CallBack 내에서 Access 한 항목은 추적하지 않는다. <br>
+    Data가 실제로 변경된 경우에만 Trigger 되며 watch 종속성 추적을 부작용과 분리하여 CallBack이 실행되어야 하는 시기를 보다 **_정확하게_** 제어할 수 있다.
+
+<br>
+
+-   **_watchEffect_** <br>
+    종속성 추적과 부작용을 한 단계로 결합한다. <br>
+    동기 실행 중 Access 되는 모든 반응 속성을 **_자동_** 으로 추적한다. <br>
+    이 방법은 더 편리하고 일반적으로 더 간결한 코드를 작성할 수 있지만 반응송 종속성을 덜 명시적으로 만든다.
+
+<br>
+
+### **SFC** (Single File Component)
+
+Vue Instance template, script, style을 하나의 File로 **_캡슐화_** 하는 특수 파일 형식이다. 확장자는 **_.vue_** 이다.
+
+<br>
+
+#### **언어 블록**
+
+1. template <br>
+   .vue 파일에 하나의 top-level <template></template> Block을 포함할 수 있다. <br>
+   Content는 추출되어 **_@vue/compiler-dom_** 으로 전달되고 자바스크립트 **_Rendering_** 기능으로 사전 Compile 되고 Render Option으로 내보내어 **_Component에 첨부_** 된다. <br>
+
+<br>
+
+2. script <br>
+   .vue 파일에 하나의 <script></script> Block을 포함할 수 있다. <br>
+   Script는 ES Module로 실행되고 **_default export_** 는 일반 **_객체_** 또는 defineComponent의 반환 값으로 **_Vue Component Option_** 객체여야 한다. <br>
+
+<br>
+
+3. script setup <br>
+   .vue 파일에 하나의 <script setup></script> Block을 포함할 수 있다. (Normal Script 제외)<br>
+   script setup 은 사전에 처리되어 Component의 **_setup()_** 함수로 사용된다. <br>
+   즉 Component의 각 Instance에 대해 실행되며 script setup Binding은 template에서 자동으로 노출된다. <br>
+
+<br>
+
+4. style <br>
+   .vue 파일에 여러 개의 <style></style> Tag가 포함될 수 있다.
+
+<br>
+
+#### **Custom Block**
+
+프로젝트별 요구 사항에 따라 .vue 파일에 Custom Block(사용자 정의 블록)을 추가할 수 있다.
+
+<br>
+
+#### **전 처리기**
+
+<script lang="ts"></script> lang 속성을 사용해 전 처리기 언어를 선언할 수 있다.
+
+<br>
+
+#### **src**
+
+.vue Component를 여러 파일로 분할 한 경우 src 속성을 사용해 language block에 대한 외부 파일을 가져올 수 있다. <br>
+
+```javascript
+<template src="./template.html"></template>
+```
+
+<br>
+
+### **Props**
+
+Component에 등록할 수 있는 사용자 정의 속성이다. 게시글 Component에 사용자 정의 속성을 선언하면 해당 Component를 사용하는 부모 Component에서 데이터를 전달할 수 있다. <br>
+
+블로그 구축 시 게시글을 나타내는 Component가 있다고 가정할 경우 모든 블로그 게시글의 UI나 Layout은 동일하지만 게시글의 Title, Content와 같은 Data는 각각 다르다. <br>
+각 Component 별로 Title, Content 공유가 필요할 경우 props를 사용하여 Component 간 Data를 전달할 수 있다. <br>
+
+#### **Props 선언**
+
+Vue Component는 명시적으로 **_Props_** 선언이 필요하다. Component에 전달된 외부 Props가 fallthrough 속성으로 처리되어야 함을 알 수 있다.
+
+<br>
+
+> fallthrough 이란 props 또는 emits에 명시적으로 선언되지 않은 속성 또는 이벤트를 의미한다.
+
+<br>
+
+-   **배열 선언**
+
+    -   Parent Component
+
+    ```html
+    <Card title="1번 제목" content="1번 본문"></Card>
+    ```
+
+    <br>
+
+    -   Child Parent
+
+    ```html
+    {{ title }} {{ content}}
+    ```
+
+    ```javascript
+    export default {
+        props: ["title", "content"],
+        setup(props) {
+            props.title;
+            props.content;
+        },
+    };
+    ```
+
+<br>
+
+-   **객체 선언**
+
+    -   Parent Component
+
+    ```html
+    <Card title="1번 제목" content="1번 본문"></Card>
+    ```
+
+    <br>
+
+    -   Child Parent
+
+    ```html
+    {{ title }} {{ content }}
+    ```
+
+    ```javascript
+    export default {
+        props: {
+            title: String,
+            content: String,
+        },
+        setup(props) {},
+    };
+    ```
+
+<br>
+
+#### **단방향 데이터 흐름**
+
+모든 props는 상위 속성과 하위 속성 간 데이터는 **_단방향으로 Binding_** 돼있다. 만약 상위 속성이 업데이트되면 하위 속성도 업데이트되지만 반대는 아니다. <br>
+상위 Component가 업데이트될 경우 하위 Component의 모든 props는 **_초기화_** 되며 자식 Component 내부에서 전달받은 props를 변경하지 않아야 한다. <br>
+
+```javascript
+export default {
+    props: ["title"],
+    setup(props) {
+        // Warning
+        props.title = "Change Title";
+    },
+};
+```
+
+<br>
+
+-   props를 하위 Component에서 변경하고 싶은 2가지 경우
+
+    1. props는 **_초기값_** 을 전달하는 데 사용된다. (자식 Component에서 속성 값을 Local Data 속성으로 사용할 경우) <br>
+       이 경우 props를 초기값으로 사용하는 Local 변수로 선언하는 게 좋다.
+
+    ```javascript
+    export default {
+        props: ["name"],
+        // name은 props.name 값으로 초기화되며 props 업데이트의 연결이 끊어짐
+        setup(props) {
+            const name = props.name;
+
+            return {
+                name,
+            };
+        },
+    };
+    ```
+
+    <br>
+
+    2. props 값의 변경이 필요한 경우 <br>
+       이 경우 **_computed_** 를 사용하며 상위 속성의 변경을 유지할 수 있다. <br>
+
+    ```javascript
+    export default {
+        props: ["size"],
+        setup(props) {
+            const size = computed(() => props.size.trim().toUpperCase());
+
+            return {
+                size,
+            };
+        },
+    };
+    ```
+
+<br>
+
+#### **객체 또는 배열 props Update**
+
+객체나 배열이 전달될 경우 자식 Component에서는 prop Binding(값 변경)을 변경할 수 없지만 겍체 또는 배열의 중첩 속성은 변경할 수 있다.
+
+<br>
+
+#### **Boolean Casting**
+
+Boolean Type props는 특별한 캐스팅 규칙은 다음과 같다.
+
+```javascript
+export default {
+    props: {
+        disabled: Boolean,
+    },
+};
+```
+
+```html
+<!-- true -->
+<MyComponent disabled></MyComponent>
+
+<!-- false -->
+<MyComponent></MyComponent>
+```
