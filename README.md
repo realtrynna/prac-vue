@@ -1749,3 +1749,306 @@ export default {
 <!-- false -->
 <MyComponent></MyComponent>
 ```
+
+<br>
+
+## **Events**
+
+자식 Component에서도 부모 Component로 Data를 전달 또는 Trigger의 목적으로 Event를 발생시킬 수 있으며 emit Method를 사용한다. <br>
+
+1.  template에 emit Method 사용
+
+    -   **자식 Component**
+
+    ```html
+    <template>
+        <button @click="emit(`emitEvent`,  `First`, 'Second')">submit</button>
+    </template>
+    ```
+
+    <br>
+
+    -   **부모 Component**
+
+    ```html
+    <ChildComponent @emit-event="submit"></ChildComponent>
+
+    <script>
+        export default {
+            setup() {
+                const submit = (first, second) => {
+                    console.log(first, second);
+                };
+
+                return { submit };
+            },
+        };
+    </script>
+    ```
+
+<br>
+
+2. setup() Method에 **context.emit()** Method 활용
+
+    - **자식 Component**
+
+    ```html
+    <template>
+        <button @click="showing">here</button>
+    </template>
+    ```
+
+    ```javascript
+    export default {
+        setup(props, context) {
+            const showing = (one, two) => {
+                context.emit("emitEvent", "First", "Second");
+            };
+
+            return { showing };
+        },
+    };
+    ```
+
+    <br>
+
+    - **부모 Component**
+
+    ```html
+    <button @emit-event="showing"></button>
+    ```
+
+    ```javascript
+    export default {
+        setup() {
+            const showing = (one, two) => {
+                console.log(one, two);
+            };
+        },
+    };
+    ```
+
+<br>
+
+### Event 선언
+
+emits 옵션을 사용해 Event를 선언할 수 있다. <br>
+문자 배열과 객체 문법 2가지 선언 방법이 있으며 자바스크립트 코드에서 이벤트를 내보낼 경우 setup() 함수의 파라미터로 넘어온 context.emit() Method를 사용할 수 있다.
+
+<br>
+
+1. 문자열 배열 선언
+
+    ```javascript
+    export default {
+        emits: ["someEvent"],
+        setup(props, context) {
+            context.emit("someEvent", "First");
+        },
+    };
+    ```
+
+<br>
+
+2. 객체 문법 선언 <br>
+   객체 문법으로 선언할 경우 validation 로직을 추가할 수 있으며 만약 validation이 없다면 null로 설장한다. <br>
+    ```javascript
+    export default {
+        emits: {
+            // 유효성 검사 없음
+            someEvent: null,
+            // 유효성 검사 있음
+            someSubmit: (result) => {
+                if (email && password) return true;
+                else return false;
+            },
+        },
+        setup(props, context) {
+            context.emit("someEvent", "First");
+        },
+    };
+    ```
+
+<br>
+
+## **v-model**
+
+Component를 만든 후 해당 Component에 v-model을 적용하려면 @update:modelValue Event를 사용해야 한다. <br>
+일반적으로 기본 HTML 요소인 input Tag에 v-model은 다음과 같이 사용한다.
+
+```html
+<input v-model="username" />
+```
+
+또는 <br>
+
+```html
+<input :value="username" @input="username = $event.target.value" />
+```
+
+<br>
+
+## **Slot**
+
+HTML Element와 마찬가지로 Component에 Content를 전달할 수 있으면 좋다.
+
+<br>
+
+-   자식 Component
+
+    ```html
+    <template>
+        <button>here</button>
+        <slot></slot>
+    </template>
+
+    <!-- 부모 Component에서 Slot Content가 제공되지 않았을 경우 Slot에 대한 Fallback(Default Content)을 지정할 수 있다. -->
+    <template>
+        <button>here</button>
+        <slot></slot>
+    </template>
+    ```
+
+<br>
+
+-   부모 Component
+    ```html
+    <FancyButton>This is slot</FancyButton>
+    ```
+
+<br>
+
+## **Provide Inject**
+
+Provide와 Inject를 사용하면 상위 Component는 Dependency Provider 역할을 한다. <br>
+데이터를 받는 하위 Component는 깊이에 관계 없이 Dependency Provider가 제공하는 종속성(Data, Function 등)을 주입받을 수 있다.
+
+<br>
+
+-   부모 Component (provide) <br>
+    처음 파라미터 주입 Key(String Or Symbol) / 하위 Component에서 주입된 값을 조회하는 데 사용함. <br>
+    제공될 값 / refs와 같은 반응형 데이터를 포함한 모든 유형이 될 수 있다.
+
+    ```javascript
+    import { ref, provide } from "vue";
+
+    const value = ref("value");
+
+    provide("key", value);
+    ```
+
+<br>
+
+-   자식 Component (Inject) <br>
+    inject를 사용해 provide Data를 받을 수 있다. <<br>
+
+    ```javascript
+    import { inject } from "vue";
+
+    const result = inject("key");
+    ```
+
+<br>
+
+## **LifeCycle Hooks**
+
+Component Instance는 생성과 소멸 시 사전에 정의된 단계를 거치는 과정을 LifeCycle 이라 하며 LifeCycle 단계에서 실행할 수 있는 기능을 Hooks 라고 한다. <br>
+
+Component Rendering 완료 후 DOM Node를 만든 후 onMounted Hooks를 사용해 코드를 실행할 수 있다. <br>
+
+```javascript
+onMounted(() => {
+    console.log("Component Mounted");
+});
+```
+
+<br>
+
+1.  **Creation** (생성) <br>
+    Compoonent 초기화 단계이며 Creation Hooks는 LifeCycle 단계에서 **_가장 먼저_** 실행된다. <br>
+    Component가 DOM에 추가되기 전이므로 DOM에 접근할 수 없다. <br>
+    Server Rendering에서 지원되는 단계 <br>
+    Client나 Server Rendering 단계에서 실행돼야 할 작업이 있으면 이 단계에서 실행
+
+    <br>
+
+    -   beforeCreate <br>
+        Component Instance 초기화 시 실행 data() 또는 computed와 같은 다른 옵션을 처리하기 전 즉시 호출 <br>
+
+    -   created <br>
+        Component Instanc 초기화 완료 후 실행 <br>
+
+    -   setup <br>
+        Composition API의 setup()은 Options API Hook보다 먼저 실행된다. <br
+
+<br>
+
+2.  **Mounting** (장착) <br>
+    DOM에 Component를 **_삽입_** 하는 단계이며 onBeforeMount와 onMounted가 있다. <br>
+    Server Rendering에서 지원되지 않는다. <br>
+    초기 Rendering 직전에 DOM을 변경하고자 한다면 이 단계에서 활용할 수 있다.
+
+    <br>
+
+    -   onBeforeMount <br>
+        Component가 Mount 되기 직전 호출 <br>
+
+    -   onMounted <br>
+        Component가 Mount 된 후 호출되며 DOM에 접근할 수 있다. <br>
+        모든 자식 Component가 Mount 되었음을 의미한다. <br>
+        자체 DOM Tree가 생성되어 상위 Component에 삽입되었음을 의미한다. <br>
+
+<br>
+
+3.  **Updating** (수정) <br>
+    Component에 사용되는 반응형 Data가 **_변경_** 되거나 어떠한 이유로 **_재렌더링_** 될 경우 호출된다. <br>
+
+    -   onBeforeUpdate <br>
+        반응형 상태 변경으로 인해 Component가 DOM Tree를 Update 하기 직전 호출 <br>
+    -   onUpdated <br>
+        반응 상태 변경으로 인해 Component가 DOM Tree를 Update 한 후 호출 <br>
+
+<br>
+
+4. **Destruction** (소멸) <br>
+   **_해체단계_** 이며 onBeforeUnmount와 onUmounted가 있다.
+
+    - onBeforeUnmount <br>
+      Component가 Mount 해제되기 직전 호출 <br>
+
+    - onUnmounted <br>
+      Component가 Mount 해제된 후 호출 <br>
+
+<br>
+
+## **Template refs**
+
+선언적 Rendering Model은 대부분의 직접적인 DOM의 작업을 대신 수행하지만 간혹 DOM 요소에 직접 접근해야 할 경우가 있다. <br>
+ref 특수 속성을 사용해 접근할 수 있다. <br>
+
+```html
+<input type="test" ref="input" />
+```
+
+<br>
+
+> ref는 특수 속성이므로 Mount 된 DOM 요소 또는 자식 Component에 대한 참조를 얻을 수 있다.
+
+<br>
+
+-   Tag의 속성값과 동일한 이름의 변수를 선언해야하며 Component가 Mount 된 후 접근할 수 있다. <br>
+
+<br>
+
+## Vue Router
+SPA 구현 시 사용되는 공식 라이브러리다. Router란 네트워크 간 데이터를 전송하는 장치를 말하며 Vue의 Router는 URL에 따라 어떤 View를 보여줄지 Mapping해준다. <br>
+/home 경로로 들어오면 Home.vue Component를 화면에 Rendering한다.
+
+<br>
+
+```cmd
+npm i vue-router
+```
+
+<br>
+

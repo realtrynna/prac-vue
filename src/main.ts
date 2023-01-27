@@ -1,12 +1,13 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import { createApp } from "vue";
 import App from "./App.vue";
+import router from "./router";
 
 // import Card from "./components/Card.vue";
 
 import "./assets/main.css";
 
-const app = createApp(App);
+const app = createApp(App).use(router);
 
 // app.component("Card", Card);
 
