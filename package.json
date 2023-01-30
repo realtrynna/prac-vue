@@ -9,12 +9,14 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --noEmit",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
-    "db": "json-server --watch db.json"
+    "db": "json-server --watch db.json --delay 1000"
   },
   "dependencies": {
     "@types/bootstrap": "^5.2.6",
     "axios": "^1.2.5",
     "bootstrap": "^5.2.3",
+    "dayjs": "^1.11.7",
+    "pinia": "^2.0.29",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6"
   },
