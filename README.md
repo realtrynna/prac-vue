@@ -2040,7 +2040,7 @@ ref 특수 속성을 사용해 접근할 수 있다. <br>
 
 <br>
 
-## Vue Router
+## **Vue Router**
 SPA 구현 시 사용되는 공식 라이브러리다. Router란 네트워크 간 데이터를 전송하는 장치를 말하며 Vue의 Router는 URL에 따라 어떤 View를 보여줄지 Mapping해준다. <br>
 /home 경로로 들어오면 Home.vue Component를 화면에 Rendering한다.
 
@@ -2052,3 +2052,168 @@ npm i vue-router
 
 <br>
 
+### **Custom Directives**
+Vue Core에서 기본으로 제공하는 Directive(v-if, v-for) 외에도 Vue를 사용하면 직접 Custom Directive를 만들 수 있다.
+
+<br>
+
+### **상태 관리**
+Vue Instance는 자체적으로 상태 관리를한다. <br>
+
+-   **State** <br>
+    Component 내부 선언된 상태 <br>
+-   **View** <br>
+    상태가 선언적으로 Mapping 된 Template <br>
+-   **Actions** <br>
+    View에서 사용자의 입력에 대한 반응으로 State를 변경
+
+<br>
+
+```javascript
+import { ref } from "vue"
+
+// State
+const currentNum = ref(0);
+
+// Action
+const increase = () => currentNum.value++;
+```
+```html
+<!-- View -->
+<template>
+    {{ currentNum }}
+</template>
+```
+
+<br>
+
+#### Component 간 공통된 상태 공유
+1. 공유하고자 하는 상태를 부모 Component로 두고 Props로 전달 <br>
+    이 방법은 깊은 계층구조를 가진 Component에서 Prop Drilling 문제 발생 <br>
+
+2. Template Refs를 사용해 부모/자식 Instance에 직접 접근하거나 Emits Event를 통해 여러 복사본의 상태를 동기화 <br>
+    이 방법은 유지 보수가 불가능함
+
+<br>
+
+#### Reactivity API 상태 관리
+여러 Component에서 공유해야 하는 상태가 있는 경우 reactive()를 사용해 반응형 객체 생성 후 여러 Component에서 사용 <br>
+```javascript
+// store.js
+import { reactive } from "vue"
+
+export const store = reactive({
+    currentNum: 0,
+})
+```
+```javascript
+// ComponentA
+import { store } from ""
+```
+```html
+<template>
+    {{ store.count }}
+<template>
+```
+```javascript
+// ComponentB
+import { store } from ""
+```
+```html
+<template>
+    {{ store.count }}
+<template>
+```
+
+<br>
+
+```cmd
+npm i pinia
+```
+
+<br>
+
+-   defineStore <br>
+    1. state: 상태 <br>
+    2. getters: computed를 사용해 state 값을 계산해 반환(Return)하는 역할 <br> 
+    3. actions: store를 변경할 수 있는 Method(Function)
+```javascript
+// store.js
+import { defineStore } from "pinia";
+
+export const useStore = defineStore("userMeta", {
+    state: () => ({
+        name: "윤승근",
+        age: 30,
+    }),                              // data
+    getters: {
+        addIntroduce(state) {
+            state.name = `안녕하세요 ${state.name}입니다.`;
+        }
+    },                                    // computed
+    actions: {
+        removeIntroduce() {
+            this.name = null;
+        }
+    },                                    // methods
+});
+```
+```javascript
+import { useStore } from ""
+
+// reactive Mapping Object
+const store = useStroe();
+```
+```html
+<template>
+    <h3>Name: {{ store.name }}</h3>
+    
+    <button @click="store.addIntroduce">AddIntroduce</button>
+    <button @click="store.removeIntroduce">RemoveIntroduce</button>
+</template>
+```
+
+<br>
+
+-   구조 분해 할당
+    state와 getters는 storeToRefs 사용 <br>
+    actions는 일반 구조 분해 할당 <br>
+    ```javascript
+    import { storeToRefs } from "pinia"
+    import { useStore } from ""
+
+    const stroe = useStore();
+    
+    const { name, age, addIntroduce } = storeToRefs(store);
+    const { removeIntroduce } = store;
+    ```
+
+<br>
+
+Global Before Guard <br>
+1. router.beforeEach <br>
+Navigation Trigger 시 Guard가 작성 순서에 따라 호출되기 전 모든 경우에 발생한다. <br>
+Guard는 Async로 실행될 수 있으며 Navigation은 모든 Hook이 해결되기 전까지 보류 중으로 간주된다. 
+
+<br>
+
+-  모든 Guard 함수는 2개의 인수를 받는다. <br>
+1.  to <br>
+    Routing되는 RouteLocationNormalized Object(Route 위치 정보를 담고 있는 Object) <br>
+2. from <br>
+    Routing되기 전의 RouteLocationNormalized Object(Route 위치 정보를 담고 있는 Object) <br>
+
+-   선택적(Options)으로 반환 다음값 중 하나를 반환할 수 있다. <br>
+    false: 현재 Routing(Navigation) 취소 <br>
+    A Route Location: 경로 위치를 반환해 다른 위치로 Redirection 전달될 값은 router.push() 호출 Method와 동일
+
+    <br>
+
+    > 값을 Return하지 않으면 이동하기로 한 페이지로 이동 <br>
+    ```javascript
+    const router = createRouter({})
+
+    router.beforeEach((to, from) => {
+        return false;
+    })
+```

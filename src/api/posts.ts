@@ -12,15 +12,15 @@ export const posts = [
 const baseUrl = "http://localhost:3000";
 
 export const findPostById = async (postId: number) => {
-    const req = await axios.get(`${baseUrl}/posts/${postId}`);``
-   
+    const req = await axios.get(`${baseUrl}/posts/${postId}`);
+
     return req?.data;
 };
 
 export const getPostList = async () => {
-    const req = await axios.get(`${baseUrl}/posts?_limit=3`);
+    const req = await axios.get(`${baseUrl}/posts`);
 
-    return req?.data;
+    return req.data ? req.data : null;
 };
 
 export const createPost = async (
