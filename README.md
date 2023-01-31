@@ -1952,7 +1952,7 @@ Provide와 Inject를 사용하면 상위 Component는 Dependency Provider 역할
 
 ## **LifeCycle Hooks**
 
-Component Instance는 생성과 소멸 시 사전에 정의된 단계를 거치는 과정을 LifeCycle 이라 하며 LifeCycle 단계에서 실행할 수 있는 기능을 Hooks 라고 한다. <br>
+Component Instance는 생성과 소멸 시 사전에 정의된 단계를 거치는 과정을 LifeCycle이라 하며 LifeCycle 단계에서 실행할 수 있는 기능을 Hooks 라고 한다. <br>
 
 Component Rendering 완료 후 DOM Node를 만든 후 onMounted Hooks를 사용해 코드를 실행할 수 있다. <br>
 
@@ -2058,7 +2058,7 @@ Vue Core에서 기본으로 제공하는 Directive(v-if, v-for) 외에도 Vue를
 <br>
 
 ### **상태 관리**
-Vue Instance는 자체적으로 상태 관리를한다. <br>
+Vue Instance는 자체적으로 상태 관리를 한다. <br>
 
 -   **State** <br>
     Component 내부 선언된 상태 <br>
@@ -2190,30 +2190,98 @@ const store = useStroe();
 
 <br>
 
-Global Before Guard <br>
-1. router.beforeEach <br>
-Navigation Trigger 시 Guard가 작성 순서에 따라 호출되기 전 모든 경우에 발생한다. <br>
-Guard는 Async로 실행될 수 있으며 Navigation은 모든 Hook이 해결되기 전까지 보류 중으로 간주된다. 
+## **Navigation Guard**
+Vue Router에서 제공하는 Navigation Guard는 Page Redirection 또는 Cancel 하여 특정 Page 진입을 보호하는 데 사용한다. <br>
+
+Route Search Process는 Global, Route, Component 3가지가 있다.
 
 <br>
 
--  모든 Guard 함수는 2개의 인수를 받는다. <br>
-1.  to <br>
-    Routing되는 RouteLocationNormalized Object(Route 위치 정보를 담고 있는 Object) <br>
-2. from <br>
-    Routing되기 전의 RouteLocationNormalized Object(Route 위치 정보를 담고 있는 Object) <br>
+1. **Global Guard** <br>
+    router.beforeEach() Method 사용 <br>
+    Navigation이 Trigger 될 경우 Guard가 작성 순서에 따라 호출되기 전 모든 경우에 발생한다. <br>
+    Guard는 비동기로 실행될 수 있고 Navigation은 모든 Hook이 해결되기 전까지 보류 증으로 간주된다. <br>
+    <br>
+    #### **Parameters**
+    -   **_to_**: Routing 되는 위치 정보를 담고 있는 객체 <br>
+    -   **_from_**: Routing 되기 전의 위치 정보를 담고 있는 객체 <br>
+    #### **Return Values**
+    -   **_undefined_** | **_true_**: Navigation Guard 검증 완료이므로 다음 Navigation Guard 수행 <br>
+    -   **_false_**: 현재 Routing Cancel <br>
+    ```javascript
+    const router = createRouter()
 
--   선택적(Options)으로 반환 다음값 중 하나를 반환할 수 있다. <br>
-    false: 현재 Routing(Navigation) 취소 <br>
-    A Route Location: 경로 위치를 반환해 다른 위치로 Redirection 전달될 값은 router.push() 호출 Method와 동일
+    router.beforeEach((to, from) => {
+        return false
+    })
+    ```
+
+<br>
+
+2. **Route Guard** <br>
+    beforeEnter() Method 사용 <br>
+    beforeEnter는 해당 Route 진입 시 Trigger된다. 같은 URL이면서 params, query, hash의 변경이 일어날 경우 Trigger되지 않는다. <br>
+    Guard는 오직 다른 Route로 Navigation 할 경우에만 Trigger 된다. <br>
+    { name: "path" } Redirection
+    ```javascript
+    const routes = [
+        {
+            path: "/user/:userId",
+            component: UserDetail,
+            beforeEnter: (to, from) => {
+                return false // Reject Navigation
+            }
+        }
+    ]
+    ```
+
+<br>
+
+3. **Component Guard** <br>
+    Composition API: onBeforeRouteUpdate(), onBeforeRouteLeave() Method 사용 <br>
+    Options API: setup 보다 먼저 실행되므로 beforeRouteEnter() Method 사용 <br>
+    ```javascript
+    import { onBeforeRouteLeave, onBeforeRouteUpdate } from "vue-router";
+
+    onBeforeRouteUpdate(() => {
+        console.log("onBeforeRouteUpdate");
+    });
+
+    onBeforeRouteLeave(() => {
+        console.log("onBeforeRouteLeave");
+    });
+    ```
+
+    ```javascript
+    export default {
+        beforeRouteEnter(to, from) {
+            console.log("beforeRouteEnter");
+        },
+    };
+    ```
+
+<br>
+
+## Dynamic Component <br>
+Component를 동적으로 변경하고 싶을 경우 v-bind:is 속성을 사용해 변경한다. <br>
+Dynamic Component는 Tab Interface와 같이 Component 간에 동적으로 전환해야 할 경우 사용한다. <br>
+
+-   :is 속성에 전달된 값은 다음 중 하나를 포함할 수 있다. <br>
+    등록된 Component에 문자열 이름 string <br>
+    실제 가져온 Component Object
 
     <br>
 
-    > 값을 Return하지 않으면 이동하기로 한 페이지로 이동 <br>
-    ```javascript
-    const router = createRouter({})
-
-    router.beforeEach((to, from) => {
-        return false;
-    })
+```html
+<MyComponent :is="currentTabComponent"></MyComponent>
 ```
+
+<br>
+
+> <MyComponent :is="...">을 사용해 여러 Component간 전환하면 Component 간 mount가 해제된다. <br>
+> <KeepAlive> 내장 Component를 사용해 비활성 Component들의 활성 상태를 유지할 수 있게 강제할 수 있다.
+
+<br>
+
+
+

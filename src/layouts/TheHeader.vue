@@ -1,30 +1,13 @@
 <template>
     <div>
-        <nav>
-            <RouterLink to="/">Main</RouterLink> |
-            <RouterLink to="/posts">Article</RouterLink>
-            <button class="create" @click="pageGoPostCreate">Create</button> |
-        </nav>
-        <main>
-            <RouterView></RouterView>
-        </main>
+        <h3>The Header</h3>
+        <hr />
+        <router-link to="/">Main </router-link> |
+        <router-link to="/about">About </router-link> |
+        <router-link to="/default">Default </router-link>
     </div>
 </template>
 
-<script setup lang="ts">
-import { useRouter } from "vue-router";
+<script setup lang="ts"></script>
 
-const router = useRouter();
-
-const pageGoPostCreate = () => {
-    return router.push({
-        name: "PostCreate",
-    });
-};
-</script>
-
-<style scoped>
-.create {
-    margin-left: 20px;
-}
-</style>
+<style scoped></style>

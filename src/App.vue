@@ -1,11 +1,11 @@
 <template>
     <TheHeader></TheHeader>
-    <TestView></TestView>
+    <TheView></TheView>
 </template>
 
 <script setup lang="ts">
 import TheHeader from "./layouts/TheHeader.vue";
-import TestView from "./views/TestView.vue";
+import TheView from "./layouts/TheView.vue";
 </script>
 
 <style scoped></style>
